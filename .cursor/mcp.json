@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "votacoes-parlamentares": {
+      "type": "http",
+      "url": "https://localhost-d10c2cc8.deco.host/mcp"
+    }
+  }
+}
