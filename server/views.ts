@@ -13,7 +13,7 @@ import type { CreateMCPServerOptions } from "@deco/workers-runtime/mastra";
 export const views: CreateMCPServerOptions<Env, typeof StateSchema>["views"] =
   () => [
     {
-      title: "Informações de deputados",
+      title: "Informações de Parlamentares",
       icon: "data_loss_prevention", // Available icons: https://fonts.google.com/icons?selected=Material+Icons
       url: "https://votacoes-parlamentares.deco.page",
     },

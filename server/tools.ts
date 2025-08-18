@@ -256,10 +256,231 @@ export const createRankingDespesasTool = (env: Env) =>
     },
   });
 
+/**
+ * Tool to fetch and parse document content from URLs
+ */
+export const createFetchDocumentTool = (env: Env) =>
+  createTool({
+    id: "FETCH_DOCUMENT",
+    description: "Fetch and parse document content from external URLs",
+    inputSchema: z.object({
+      url: z.string().describe("Document URL to fetch"),
+      type: z.enum(["document", "registro", "frente"]).describe("Type of document"),
+    }),
+    outputSchema: z.object({
+      success: z.boolean(),
+      contentType: z.string().optional(),
+      title: z.string().optional(),
+      parsedContent: z.object({
+        text: z.string().optional(),
+        metadata: z.record(z.any()).optional(),
+        tables: z.array(z.any()).optional(),
+        links: z.array(z.object({
+          text: z.string(),
+          url: z.string(),
+        })).optional(),
+      }).optional(),
+      rawContent: z.string().optional(),
+      error: z.string().optional(),
+    }),
+    execute: async ({ context }) => {
+      try {
+        console.log(`Fetching document: ${context.url}`);
+        
+        const response = await fetch(context.url, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (compatible; VotacoesParlamentares/1.0)',
+            'Accept': 'text/html,application/xhtml+xml,application/xml,text/xml,*/*',
+          },
+          signal: AbortSignal.timeout(15000), // 15 second timeout
+        });
+        
+        if (!response.ok) {
+          return {
+            success: false,
+            error: `HTTP Error: ${response.status} ${response.statusText}`,
+          };
+        }
+        
+        const contentType = response.headers.get('content-type') || '';
+        const content = await response.text();
+        
+        // Basic parsing based on content type
+        let parsedContent: any = {};
+        let title = '';
+        
+        if (contentType.includes('xml') || content.trim().startsWith('<?xml')) {
+          // Parse XML content
+          try {
+            parsedContent = parseXmlContent(content, context.type);
+            title = parsedContent.metadata?.title || 'Documento XML';
+          } catch (error) {
+            console.warn('XML parsing failed, treating as text:', error);
+            parsedContent = { text: content };
+          }
+        } else if (contentType.includes('html')) {
+          // Parse HTML content
+          parsedContent = parseHtmlContent(content, context.type);
+          title = parsedContent.metadata?.title || 'Documento HTML';
+        } else {
+          // Treat as plain text
+          parsedContent = { text: content };
+          title = 'Documento de Texto';
+        }
+        
+        return {
+          success: true,
+          contentType,
+          title,
+          parsedContent,
+          rawContent: content.length > 10000 ? content.substring(0, 10000) + '...' : content,
+        };
+        
+      } catch (error) {
+        console.error("Error fetching document:", error);
+        return {
+          success: false,
+          error: error instanceof Error ? error.message : 'Unknown error occurred',
+        };
+      }
+    },
+  });
+
+// Helper function to parse XML content
+function parseXmlContent(xmlContent: string, type: string) {
+  const result: any = {
+    text: '',
+    metadata: {},
+    tables: [],
+    links: [],
+  };
+  
+  try {
+    // Basic XML parsing without external libraries
+    // Extract title
+    const titleMatch = xmlContent.match(/<title[^>]*>(.*?)<\/title>/is);
+    if (titleMatch) {
+      result.metadata.title = titleMatch[1].replace(/<[^>]*>/g, '').trim();
+    }
+    
+    // Extract text content (remove XML tags)
+    const textContent = xmlContent
+      .replace(/<script[^>]*>.*?<\/script>/gis, '')
+      .replace(/<style[^>]*>.*?<\/style>/gis, '')
+      .replace(/<[^>]*>/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+    
+    result.text = textContent.substring(0, 5000); // Limit text length
+    
+    // Extract links
+    const linkMatches = xmlContent.matchAll(/<a[^>]+href="([^"]*)"[^>]*>(.*?)<\/a>/gis);
+    for (const match of linkMatches) {
+      result.links.push({
+        url: match[1],
+        text: match[2].replace(/<[^>]*>/g, '').trim(),
+      });
+    }
+    
+    // Extract metadata based on document type
+    if (type === 'document') {
+      // Extract document-specific metadata
+      const docTypeMatch = xmlContent.match(/<tipoDocumento[^>]*>(.*?)<\/tipoDocumento>/is);
+      if (docTypeMatch) {
+        result.metadata.tipoDocumento = docTypeMatch[1].trim();
+      }
+      
+      const valorMatch = xmlContent.match(/<valor[^>]*>(.*?)<\/valor>/is);
+      if (valorMatch) {
+        result.metadata.valor = valorMatch[1].trim();
+      }
+    }
+    
+  } catch (error) {
+    console.warn('XML parsing error:', error);
+    result.text = xmlContent.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().substring(0, 5000);
+  }
+  
+  return result;
+}
+
+// Helper function to parse HTML content
+function parseHtmlContent(htmlContent: string, type: string) {
+  const result: any = {
+    text: '',
+    metadata: {},
+    tables: [],
+    links: [],
+  };
+  
+  try {
+    // Extract title
+    const titleMatch = htmlContent.match(/<title[^>]*>(.*?)<\/title>/is);
+    if (titleMatch) {
+      result.metadata.title = titleMatch[1].replace(/<[^>]*>/g, '').trim();
+    }
+    
+    // Extract main content (remove scripts and styles)
+    let cleanContent = htmlContent
+      .replace(/<script[^>]*>.*?<\/script>/gis, '')
+      .replace(/<style[^>]*>.*?<\/style>/gis, '')
+      .replace(/<nav[^>]*>.*?<\/nav>/gis, '')
+      .replace(/<header[^>]*>.*?<\/header>/gis, '')
+      .replace(/<footer[^>]*>.*?<\/footer>/gis, '');
+    
+    // Extract text content
+    const textContent = cleanContent
+      .replace(/<[^>]*>/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+    
+    result.text = textContent.substring(0, 5000);
+    
+    // Extract tables
+    const tableMatches = cleanContent.matchAll(/<table[^>]*>(.*?)<\/table>/gis);
+    for (const tableMatch of tableMatches) {
+      const tableHtml = tableMatch[0];
+      const rowMatches = tableHtml.matchAll(/<tr[^>]*>(.*?)<\/tr>/gis);
+      const tableData = [];
+      
+      for (const rowMatch of rowMatches) {
+        const cellMatches = rowMatch[1].matchAll(/<t[hd][^>]*>(.*?)<\/t[hd]>/gis);
+        const row = [];
+        for (const cellMatch of cellMatches) {
+          row.push(cellMatch[1].replace(/<[^>]*>/g, '').trim());
+        }
+        if (row.length > 0) {
+          tableData.push(row);
+        }
+      }
+      
+      if (tableData.length > 0) {
+        result.tables.push(tableData);
+      }
+    }
+    
+    // Extract links
+    const linkMatches = cleanContent.matchAll(/<a[^>]+href="([^"]*)"[^>]*>(.*?)<\/a>/gis);
+    for (const match of linkMatches) {
+      result.links.push({
+        url: match[1],
+        text: match[2].replace(/<[^>]*>/g, '').trim(),
+      });
+    }
+    
+  } catch (error) {
+    console.warn('HTML parsing error:', error);
+    result.text = htmlContent.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().substring(0, 5000);
+  }
+  
+  return result;
+}
+
 export const tools = [
   createListarDeputadosTool,
   createEventosDeputadoTool,
   createDespesasDeputadoTool,
   createFrentesDeputadoTool,
   createRankingDespesasTool,
+  createFetchDocumentTool,
 ];

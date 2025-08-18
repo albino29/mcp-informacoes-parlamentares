@@ -7,18 +7,21 @@ import {
   MapPin,
   Building,
   ArrowLeft,
-  ExternalLink,
   Receipt,
   DollarSign,
   FileText,
   CreditCard,
   Users,
   Hash,
+  User,
 } from "lucide-react";
-import { useEventosDeputado, useDespesasDeputado, useFrentesDeputado } from "@/hooks/useDeputados";
+import { useEventosDeputado, useDespesasDeputado, useFrentesDeputado, useListarDeputados } from "@/hooks/useDeputados";
 import RankingDespesasChart from "@/components/RankingDespesasChart";
+import DocumentModal from "@/components/DocumentModal";
 
 function EventoCard({ evento }: { evento: any }) {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   const formatDate = (dateString: string) => {
     if (!dateString) return "Data não informada";
     try {
@@ -130,23 +133,34 @@ function EventoCard({ evento }: { evento: any }) {
         {/* URL do Registro */}
         {evento.urlRegistro && (
           <div className="pt-2 border-t border-slate-700">
-            <a 
-              href={evento.urlRegistro}
-              target="_blank"
-              rel="noopener noreferrer"
+            <button
+              onClick={() => setIsModalOpen(true)}
               className="inline-flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300"
             >
-              <ExternalLink className="w-3 h-3" />
+              <FileText className="w-3 h-3" />
               Ver registro completo
-            </a>
+            </button>
           </div>
         )}
       </div>
+
+      {/* Document Modal */}
+      {evento.urlRegistro && (
+        <DocumentModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          url={evento.urlRegistro}
+          type="registro"
+          title={`Registro - ${evento.descricaoTipo || 'Evento'}`}
+        />
+      )}
     </div>
   );
 }
 
 function DespesaCard({ despesa }: { despesa: any }) {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("pt-BR", {
       style: "currency",
@@ -266,24 +280,35 @@ function DespesaCard({ despesa }: { despesa: any }) {
               </span>
             )}
             {despesa.urlDocumento && (
-              <a 
-                href={despesa.urlDocumento}
-                target="_blank"
-                rel="noopener noreferrer"
+              <button
+                onClick={() => setIsModalOpen(true)}
                 className="inline-flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300"
               >
-                <ExternalLink className="w-3 h-3" />
+                <FileText className="w-3 h-3" />
                 Ver documento
-              </a>
+              </button>
             )}
           </div>
         </div>
       </div>
+
+      {/* Document Modal */}
+      {despesa.urlDocumento && (
+        <DocumentModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          url={despesa.urlDocumento}
+          type="document"
+          title={`Documento - ${despesa.nomeFornecedor || 'Sem fornecedor'}`}
+        />
+      )}
     </div>
   );
 }
 
 function FrenteCard({ frente }: { frente: any }) {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   return (
     <div className="bg-slate-800 border border-slate-700 rounded-lg p-4 hover:bg-slate-750 transition-colors">
       <div className="space-y-3">
@@ -328,18 +353,27 @@ function FrenteCard({ frente }: { frente: any }) {
         {/* URI Link */}
         {frente.uri && (
           <div className="pt-2 border-t border-slate-700">
-            <a 
-              href={frente.uri}
-              target="_blank"
-              rel="noopener noreferrer"
+            <button
+              onClick={() => setIsModalOpen(true)}
               className="inline-flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300"
             >
-              <ExternalLink className="w-3 h-3" />
+              <FileText className="w-3 h-3" />
               Ver detalhes da frente
-            </a>
+            </button>
           </div>
         )}
       </div>
+
+      {/* Document Modal */}
+      {frente.uri && (
+        <DocumentModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          url={frente.uri}
+          type="frente"
+          title={`Frente - ${frente.titulo || 'Sem título'}`}
+        />
+      )}
     </div>
   );
 }
@@ -348,9 +382,13 @@ function DeputadoDetalhePage() {
   const { deputadoId } = useParams({ from: "/deputado/$deputadoId" });
   const [activeTab, setActiveTab] = useState("eventos");
   
+  const { data: deputadosResponse } = useListarDeputados();
   const { data: eventosResponse, isLoading: loadingEventos, error: errorEventos } = useEventosDeputado(deputadoId);
   const { data: despesasResponse, isLoading: loadingDespesas, error: errorDespesas } = useDespesasDeputado(deputadoId);
   const { data: frentesResponse, isLoading: loadingFrente, error: errorFrente } = useFrentesDeputado(deputadoId);
+  
+  const deputados = deputadosResponse?.deputados || [];
+  const deputadoAtual = deputados.find((dep: any) => dep.id.toString() === deputadoId);
   
   const eventos = eventosResponse?.eventos || [];
   const despesas = despesasResponse?.despesas || [];
@@ -366,17 +404,56 @@ function DeputadoDetalhePage() {
     <div className="bg-slate-900 min-h-screen p-6">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="flex items-center gap-4 mb-6">
-          <Link to="/" className="text-slate-400 hover:text-white">
-            <ArrowLeft className="w-5 h-5" />
-          </Link>
-          <div>
-            <h1 className="text-2xl font-bold text-white">
-              Detalhes do Deputado
-            </h1>
-            <p className="text-slate-400">
-              ID: {deputadoId}
-            </p>
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-4">
+            <Link to="/" className="text-slate-400 hover:text-white">
+              <ArrowLeft className="w-5 h-5" />
+            </Link>
+            <div>
+              <h1 className="text-2xl font-bold text-white">
+                {deputadoAtual ? (deputadoAtual.nomeEleitoral || deputadoAtual.nome) : 'Deputado'}
+              </h1>
+              {deputadoAtual && deputadoAtual.nome !== deputadoAtual.nomeEleitoral && (
+                <p className="text-slate-400">
+                  {deputadoAtual.nome}
+                </p>
+              )}
+              {deputadoAtual && (
+                <div className="flex items-center gap-3 mt-1">
+                  {deputadoAtual.siglaPartido && (
+                    <div className="flex items-center gap-1">
+                      <Users className="w-3 h-3 text-slate-500" />
+                      <span className="text-xs text-slate-300 font-medium">
+                        {deputadoAtual.siglaPartido}
+                      </span>
+                    </div>
+                  )}
+                  
+                  {deputadoAtual.siglaUf && (
+                    <div className="flex items-center gap-1">
+                      <span className="text-xs text-slate-400">
+                        {deputadoAtual.siglaUf}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+          
+          {/* Foto do Deputado */}
+          <div className="flex-shrink-0">
+            {deputadoAtual?.urlFoto ? (
+              <img
+                src={deputadoAtual.urlFoto}
+                alt={deputadoAtual.nome}
+                className="w-16 h-16 rounded-full object-cover border-2 border-slate-600"
+              />
+            ) : (
+              <div className="w-16 h-16 rounded-full bg-slate-600 flex items-center justify-center">
+                <User className="w-8 h-8 text-slate-300" />
+              </div>
+            )}
           </div>
         </div>
 

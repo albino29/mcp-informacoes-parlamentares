@@ -60,3 +60,19 @@ export const useRankingDespesas = (deputadoIdAtual: string, ano?: number) => {
     enabled: !!deputadoIdAtual,
   });
 };
+
+/**
+ * Hook to fetch and parse document content
+ */
+export const useFetchDocument = (url: string, type: "document" | "registro" | "frente") => {
+  // Don't fetch if it's a PDF document (we'll show it in iframe)
+  const isPDF = url.toLowerCase().includes('.pdf') || url.toLowerCase().includes('pdf');
+  const shouldFetch = !!url && !(type === 'document' && isPDF);
+  
+  return useQuery({
+    queryKey: ["fetch-document", url, type],
+    queryFn: () => client.FETCH_DOCUMENT({ url, type }),
+    staleTime: 15 * 60 * 1000, // 15 minutes (document content doesn't change often)
+    enabled: shouldFetch,
+  });
+};
