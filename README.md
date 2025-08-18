@@ -23,6 +23,9 @@ Este projeto é uma **aplicação full-stack** que integra com a **API pública 
 - Comparisons
 <img width="1197" height="668" alt="image" src="https://github.com/user-attachments/assets/a850854f-6c57-47ee-801c-dd7e318bcba3" />
 
+### No deco chat
+<img width="1508" height="614" alt="image" src="https://github.com/user-attachments/assets/45f0ec03-ba01-4134-b97f-bbb93bd9e82d" />
+
 
 ### 🏗️ Stack Tecnológica
 
