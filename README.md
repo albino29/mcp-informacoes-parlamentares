@@ -17,6 +17,13 @@ Este projeto é uma **aplicação full-stack** que integra com a **API pública 
 - 🔍 **Sistema de busca e filtros** avançados
 - 📱 **Interface responsiva** e moderna
 
+## 🖼️ Sreenshots
+- List all
+<img width="1230" height="537" alt="image" src="https://github.com/user-attachments/assets/376c5fc7-899d-41e9-9ac8-859eaf14db32" />
+- Comparisons
+<img width="1197" height="668" alt="image" src="https://github.com/user-attachments/assets/a850854f-6c57-47ee-801c-dd7e318bcba3" />
+
+
 ### 🏗️ Stack Tecnológica
 
 - **🤖 Backend**: Cloudflare Workers + Deco MCP Server
