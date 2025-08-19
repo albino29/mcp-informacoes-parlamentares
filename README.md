@@ -1,4 +1,4 @@
-# 🏛️ Votações Parlamentares
+# 🏛️ Histórico de Parlamentares
 
 **Sistema completo para consulta e análise de deputados federais do Brasil** usando MCP (Model Context Protocol) e dados abertos da Câmara dos Deputados.
 
