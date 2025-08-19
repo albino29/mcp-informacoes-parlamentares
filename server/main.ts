@@ -50,7 +50,7 @@ const runtime = withRuntime<Env, typeof StateSchema>({
      * and utilize the user's own AI Gateway, without having to
      * deploy your own, setup any API keys, etc.
      */
-    scopes: ["AI_GENERATE", "AI_GENERATE_OBJECT"],
+    scopes: ["AI_GENERATE", "AI_GENERATE_OBJECT", "LISTAR_DEPUTADOS", "LISTAR_DEPUTADOS_EVENTOS", "LISTAR_DEPUTADOS_DESPESAS", "LISTAR_DEPUTADOS_FRENTES", "LISTAR_DEPUTADOS_RANKING_DESPESAS", "LISTAR_DEPUTADOS_DOCUMENTOS"],
     /**
      * The state schema of your Application defines what
      * your installed App state will look like. When a user

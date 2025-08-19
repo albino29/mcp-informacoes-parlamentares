@@ -17,17 +17,55 @@ Este projeto é uma **aplicação full-stack** que integra com a **API pública 
 - 🔍 **Sistema de busca e filtros** avançados
 - 📱 **Interface responsiva** e moderna
 
-## 🖼️ Sreenshots
-- List all
-<img width="1230" height="537" alt="image" src="https://github.com/user-attachments/assets/376c5fc7-899d-41e9-9ac8-859eaf14db32" />
-- Comparisons
-<img width="1197" height="668" alt="image" src="https://github.com/user-attachments/assets/a850854f-6c57-47ee-801c-dd7e318bcba3" />
+## 📸 Capturas de Tela
 
-### No deco chat
-<img width="1508" height="614" alt="image" src="https://github.com/user-attachments/assets/45f0ec03-ba01-4134-b97f-bbb93bd9e82d" />
+> **💡 Democratizando o acesso à informação parlamentar brasileira através de tecnologia moderna e dados abertos**
+
+### 🏛️ Interface Principal
+**Navegação intuitiva pelos deputados federais com informações completas e atualizadas**
+
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/376c5fc7-899d-41e9-9ac8-859eaf14db32" alt="Lista de Deputados - Interface principal mostrando grid de deputados com fotos, partidos e informações de contato" width="800"/>
+  
+  *Lista completa de deputados federais com busca, filtros e informações detalhadas*
+</div>
+
+---
+
+### 📊 Dashboard de Análise
+**Ranking interativo com visualizações avançadas para análise de gastos parlamentares**
+
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/a850854f-6c57-47ee-801c-dd7e318bcba3" alt="Dashboard de Ranking - Gráfico interativo mostrando os 10 maiores gastadores e posição do deputado atual" width="800"/>
+  
+  *Gráfico de ranking dos 10 maiores gastos com destaque da posição do deputado selecionado*
+</div>
+
+---
+
+### 🤖 Integração com IA
+**Ferramenta MCP integrada ao deco.chat para consultas inteligentes e automação**
+
+<div align="center">
+  <img src="./view/public/demo-deco-parlamentares.gif" alt="Integração deco.chat - Interface de IA mostrando consultas parlamentares automatizadas" width="800"/>
+  
+  *Integração com deco.chat permitindo consultas inteligentes sobre deputados e atividades parlamentares*
+</div>
+
+---
+
+### 🎯 Por que este projeto importa?
+
+- **🌐 Transparência**: Facilita o acesso a dados públicos parlamentares
+- **📊 Visualização**: Transforma dados complexos em informações compreensíveis  
+- **🔍 Análise**: Permite comparações e rankings de atividades parlamentares
+- **🤖 Automação**: Integração com IA para consultas inteligentes
+- **📱 Acessibilidade**: Interface moderna e responsiva para todos os dispositivos
+- **⚡ Performance**: Carregamento rápido com cache inteligente
+- **🔒 Confiabilidade**: Dados oficiais da API da Câmara dos Deputados
 
 
-### 🏗️ Stack Tecnológica
+## 🏗️ Stack Tecnológica
 
 - **🤖 Backend**: Cloudflare Workers + Deco MCP Server
 - **⚛️ Frontend**: React 19 + TanStack Router + Tailwind CSS
